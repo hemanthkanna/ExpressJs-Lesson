@@ -44,7 +44,30 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static("public"));
 
-app.get("/", (req, res) => {
+const loggingMiddleware = (req, res, next) => {
+  console.log(`${req.url} - ${req.method}`);
+  next();
+};
+
+const resolveIndexByUserId = (req, res, next) => {
+  const {
+    params: { id },
+  } = req;
+  const parsedId = parseInt(id);
+  if (isNaN(parsedId)) {
+    return res.status(400).send({ message: "Bad Request. Invalid id" });
+  }
+  const findUserIndex = sampleUsers.findIndex((user) => user.id === parsedId);
+  if (findUserIndex === -1) {
+    return res.sendStatus(404);
+  }
+  req.findUserIndex = findUserIndex;
+  next();
+};
+
+app.use(loggingMiddleware);
+
+app.get("/", loggingMiddleware, (req, res) => {
   res.status(201).send({
     message: "Hello World!!",
   });
@@ -93,54 +116,22 @@ app.post("/api/users", (req, res) => {
   return res.status(201).send(sampleUsers);
 });
 
-app.put("/api/users/:id", (req, res) => {
-  const {
-    body,
-    params: { id },
-  } = req;
+app.put("/api/users/:id", resolveIndexByUserId, (req, res) => {
+  const { body, findUserIndex } = req;
 
-  const parsedId = parseInt(id);
-  if (isNaN(parsedId)) {
-    return res.status(400).send({ message: "Bad Request. Invalid id" });
-  }
-
-  const findUserIndex = sampleUsers.findIndex((user) => user.id === parsedId);
-  if (findUserIndex === -1) {
-    return res.status(404).send({ message: "User Not Found" });
-  }
-  sampleUsers[findUserIndex] = { id: parsedId, ...body };
+  sampleUsers[findUserIndex] = { id: sampleUsers[findUserIndex].id, ...body };
   res.sendStatus(201);
 });
 
-app.patch("/api/users/:id", (req, res) => {
-  const {
-    body,
-    params: { id },
-  } = req;
-  const parsedId = parseInt(id);
-  if (isNaN(parsedId)) {
-    return res.status(400).send({ message: "Bad Request. Invalid id" });
-  }
-  const findUserIndex = sampleUsers.findIndex((user) => user.id === parsedId);
-  if (findUserIndex === -1) {
-    return res.sendStatus(404);
-  }
+app.patch("/api/users/:id", resolveIndexByUserId, (req, res) => {
+  const { body, findUserIndex } = req;
+
   sampleUsers[findUserIndex] = { ...sampleUsers[findUserIndex], ...body };
   res.sendStatus(201);
 });
 
 app.delete("/api/users/:id", (req, res) => {
-  const {
-    params: { id },
-  } = req;
-  const parsedId = parseInt(id);
-  if (isNaN(parsedId)) {
-    return res.status(400).send({ message: "Bad Request. Invalid id" });
-  }
-  const findUserIndex = sampleUsers.findIndex((user) => user.id === parsedId);
-  if (findUserIndex === -1) {
-    return res.sendStatus(404);
-  }
+  const { findUserIndex } = req;
 
   sampleUsers.splice(findUserIndex, 1);
   res.sendStatus(201);
