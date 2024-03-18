@@ -63,10 +63,6 @@ app.get("/api/users", (req, res) => {
   return res.send(sampleUsers);
 });
 
-app.get("/api/products", (req, res) => {
-  res.status(201).send(sampleUsersProducts);
-});
-
 app.get("/api/users/:id", (req, res) => {
   console.log(req.params);
   const parsedId = parseInt(req.params.id);
@@ -81,6 +77,24 @@ app.get("/api/users/:id", (req, res) => {
   }
 
   return res.send(user);
+});
+
+app.post("/api/users", (req, res) => {
+  console.log(req.body);
+  const { body } = req;
+
+  const user = { id: sampleUsers[sampleUsers.length - 1].id + 1, ...body };
+
+  if (!user.username || !user.password) {
+    return res.status(400).send({ message: "Bad Request" });
+  }
+
+  sampleUsers.push(user);
+  return res.status(201).send(sampleUsers);
+});
+
+app.get("/api/products", (req, res) => {
+  res.status(201).send(sampleUsersProducts);
 });
 
 app.listen(PORT, () => {
