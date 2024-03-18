@@ -93,6 +93,25 @@ app.post("/api/users", (req, res) => {
   return res.status(201).send(sampleUsers);
 });
 
+app.put("/api/users/:id", (req, res) => {
+  const {
+    body,
+    params: { id },
+  } = req;
+
+  const parsedId = parseInt(id);
+  if (isNaN(parsedId)) {
+    return res.status(400).send({ message: "Bad Request. Invalid id" });
+  }
+
+  const findUserIndex = sampleUsers.findIndex((user) => user.id === parsedId);
+  if (findUserIndex === -1) {
+    return res.status(404).send({ message: "User Not Found" });
+  }
+  sampleUsers[findUserIndex] = { id: parsedId, ...body };
+  res.sendStatus(201);
+});
+
 app.get("/api/products", (req, res) => {
   res.status(201).send(sampleUsersProducts);
 });
