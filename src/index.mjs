@@ -129,6 +129,23 @@ app.patch("/api/users/:id", (req, res) => {
   res.sendStatus(201);
 });
 
+app.delete("/api/users/:id", (req, res) => {
+  const {
+    params: { id },
+  } = req;
+  const parsedId = parseInt(id);
+  if (isNaN(parsedId)) {
+    return res.status(400).send({ message: "Bad Request. Invalid id" });
+  }
+  const findUserIndex = sampleUsers.findIndex((user) => user.id === parsedId);
+  if (findUserIndex === -1) {
+    return res.sendStatus(404);
+  }
+
+  sampleUsers.splice(findUserIndex, 1);
+  res.sendStatus(201);
+});
+
 app.get("/api/products", (req, res) => {
   res.status(201).send(sampleUsersProducts);
 });
