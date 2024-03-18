@@ -51,7 +51,16 @@ app.get("/", (req, res) => {
 });
 
 app.get("/api/users", (req, res) => {
-  res.status(201).send(sampleUsers);
+  console.log(req.query);
+  const {
+    query: { filter, value },
+  } = req;
+
+  if (filter && value) {
+    return res.send(sampleUsers.filter((user) => user[filter].includes(value)));
+  }
+
+  return res.send(sampleUsers);
 });
 
 app.get("/api/products", (req, res) => {
