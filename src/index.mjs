@@ -1,5 +1,12 @@
 import express from "express";
-import { body, matchedData, query, validationResult } from "express-validator";
+import {
+  body,
+  matchedData,
+  query,
+  validationResult,
+  checkSchema,
+} from "express-validator";
+import { userValidationSchema } from "./utils/validationSchema.mjs";
 
 const app = express();
 
@@ -116,33 +123,21 @@ app.get("/api/users/:id", (req, res) => {
   return res.send(user);
 });
 
-app.post(
-  "/api/users",
-  [
-    body("username")
-      .isString()
-      .withMessage("Must be String")
-      .notEmpty()
-      .withMessage("must not empty username"),
+app.post("/api/users", checkSchema(userValidationSchema), (req, res) => {
+  const result = validationResult(req);
+  console.log(result);
 
-    body("password").notEmpty().withMessage("password must not be empty"),
-  ],
-  (req, res) => {
-    const result = validationResult(req);
-    console.log(result);
-
-    if (!result.isEmpty()) {
-      return res.status(400).send({ errors: result.array() });
-    }
-
-    const data = matchedData(req);
-
-    const user = { id: sampleUsers[sampleUsers.length - 1].id + 1, ...data };
-
-    sampleUsers.push(user);
-    return res.status(201).send(sampleUsers);
+  if (!result.isEmpty()) {
+    return res.status(400).send({ errors: result.array() });
   }
-);
+
+  const data = matchedData(req);
+
+  const user = { id: sampleUsers[sampleUsers.length - 1].id + 1, ...data };
+
+  sampleUsers.push(user);
+  return res.status(201).send(sampleUsers);
+});
 
 app.put("/api/users/:id", resolveIndexByUserId, (req, res) => {
   const { body, findUserIndex } = req;
