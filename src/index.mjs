@@ -1,4 +1,5 @@
 import express from "express";
+import { body, matchedData, query, validationResult } from "express-validator";
 
 const app = express();
 
@@ -73,18 +74,31 @@ app.get("/", loggingMiddleware, (req, res) => {
   });
 });
 
-app.get("/api/users", (req, res) => {
-  console.log(req.query);
-  const {
-    query: { filter, value },
-  } = req;
+app.get(
+  "/api/users",
+  query("filter")
+    .isString()
+    .notEmpty()
+    .withMessage("must not be empty")
+    .isLength({ min: 3, max: 5 })
+    .withMessage("must have  at least 3 - 5 characters"),
+  (req, res) => {
+    console.log(req["express-validator#contexts"]);
+    const result = validationResult(req);
+    console.log(result);
+    const {
+      query: { filter, value },
+    } = req;
 
-  if (filter && value) {
-    return res.send(sampleUsers.filter((user) => user[filter].includes(value)));
+    if (filter && value) {
+      return res.send(
+        sampleUsers.filter((user) => user[filter].includes(value))
+      );
+    }
+
+    return res.send(sampleUsers);
   }
-
-  return res.send(sampleUsers);
-});
+);
 
 app.get("/api/users/:id", (req, res) => {
   console.log(req.params);
@@ -102,19 +116,33 @@ app.get("/api/users/:id", (req, res) => {
   return res.send(user);
 });
 
-app.post("/api/users", (req, res) => {
-  console.log(req.body);
-  const { body } = req;
+app.post(
+  "/api/users",
+  [
+    body("username")
+      .isString()
+      .withMessage("Must be String")
+      .notEmpty()
+      .withMessage("must not empty username"),
 
-  const user = { id: sampleUsers[sampleUsers.length - 1].id + 1, ...body };
+    body("password").notEmpty().withMessage("password must not be empty"),
+  ],
+  (req, res) => {
+    const result = validationResult(req);
+    console.log(result);
 
-  if (!user.username || !user.password) {
-    return res.status(400).send({ message: "Bad Request" });
+    if (!result.isEmpty()) {
+      return res.status(400).send({ errors: result.array() });
+    }
+
+    const data = matchedData(req);
+
+    const user = { id: sampleUsers[sampleUsers.length - 1].id + 1, ...data };
+
+    sampleUsers.push(user);
+    return res.status(201).send(sampleUsers);
   }
-
-  sampleUsers.push(user);
-  return res.status(201).send(sampleUsers);
-});
+);
 
 app.put("/api/users/:id", resolveIndexByUserId, (req, res) => {
   const { body, findUserIndex } = req;
