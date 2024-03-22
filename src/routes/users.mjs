@@ -42,6 +42,16 @@ router.get(
 );
 
 router.get("/users/:id", (req, res) => {
+  console.log(req.session);
+  console.log(req.session.id);
+  req.sessionStore.get(req.session.id, (err, sessionData) => {
+    if (err) {
+      console.log(err);
+      throw err;
+    }
+    console.log(sessionData);
+  });
+
   console.log(req.params);
   const parsedId = parseInt(req.params.id);
   if (isNaN(parsedId)) {
