@@ -2,17 +2,17 @@ export const sampleUsers = [
   {
     id: 1,
     username: "kanna",
-    password: "<PASSWORD>",
+    password: "12345",
   },
   {
     id: 2,
     username: "raj",
-    password: "<PASSWORD>",
+    password: "12345",
   },
   {
     id: 3,
     username: "hemanth",
-    password: "<PASSWORD>",
+    password: "12345",
   },
 ];
 
