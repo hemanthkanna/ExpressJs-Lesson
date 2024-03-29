@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import { sampleUsers } from "./utils/constantData.mjs";
 import passport from "passport";
+import "./strategies/local-strategy.mjs";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,7 +12,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static("public"));
-app.use(cookieParser("KANNA"));
+app.use(cookieParser());
 app.use(
   session({
     secret: "DD87AC2ABA8B8",
@@ -25,6 +26,25 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/api", routes);
+
+app.post("/api/auth", passport.authenticate("local"), (req, res) => {
+  res.sendStatus(200);
+});
+
+app.get("/api/auth/status", (req, res) => {
+  console.log("Inside auth status end point");
+  console.log(req.user);
+  console.log(req.session);
+  return req.user ? res.send(req.user) : res.sendStatus(401);
+});
+
+app.post("/api/auth/logout", (req, res) => {
+  if (!req.user) return res.sendStatus(401);
+  req.logout((err) => {
+    if (err) return res.sendStatus(500);
+    res.sendStatus(200);
+  });
+});
 
 // const loggingMiddleware = (req, res, next) => {
 //   console.log(`${req.url} - ${req.method}`);
