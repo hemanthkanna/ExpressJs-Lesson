@@ -8,6 +8,8 @@ import {
 import { sampleUsers } from "../utils/constantData.mjs";
 import { userValidationSchema } from "../utils/validationSchema.mjs";
 import { resolveIndexByUserId } from "../utils/middlewares.mjs";
+import User from "../mongoose/schemas/user.mjs";
+import { hashPassword } from "../utils/helpers.mjs";
 
 const router = Router();
 
@@ -27,9 +29,9 @@ router.get(
       query: { filter, value },
     } = req;
 
-    // if (!result.isEmpty()) {
-    //   return res.status(400).send({ errors: result.array() });
-    // }
+    if (!result.isEmpty()) {
+      return res.status(400).send({ errors: result.array() });
+    }
 
     if (filter && value) {
       return res.send(
@@ -67,7 +69,7 @@ router.get("/users/:id", (req, res) => {
   return res.send(user);
 });
 
-router.post("/users", checkSchema(userValidationSchema), (req, res) => {
+router.post("/users", checkSchema(userValidationSchema), async (req, res) => {
   const result = validationResult(req);
   console.log(result);
 
@@ -76,11 +78,21 @@ router.post("/users", checkSchema(userValidationSchema), (req, res) => {
   }
 
   const data = matchedData(req);
+  console.log(data);
+  data.password = hashPassword(data.password);
+  console.log(data);
 
-  const user = { id: sampleUsers[sampleUsers.length - 1].id + 1, ...data };
+  try {
+    const user = await User.create(data);
+    res.status(200).send({ user: user });
+  } catch (error) {
+    res.status(400).send({ message: error.message });
+  }
 
-  sampleUsers.push(user);
-  return res.status(201).send(sampleUsers);
+  // const user = { id: sampleUsers[sampleUsers.length - 1].id + 1, ...data };
+
+  // sampleUsers.push(user);
+  // return res.status(201).send(sampleUsers);
 });
 
 router.put("/users/:id", resolveIndexByUserId, (req, res) => {

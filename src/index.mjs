@@ -5,9 +5,19 @@ import session from "express-session";
 import { sampleUsers } from "./utils/constantData.mjs";
 import passport from "passport";
 import "./strategies/local-strategy.mjs";
+import mongoose from "mongoose";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+mongoose
+  .connect("mongodb://localhost/express_lessons")
+  .then(() => {
+    console.log("Connected to MongoDB");
+  })
+  .catch((err) => {
+    console.log(`Error: ${err}`);
+  });
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
