@@ -22,17 +22,30 @@ router.get(
     .isLength({ min: 3, max: 5 })
     .withMessage("must have  at least 3 - 5 characters"),
   (req, res) => {
-    // console.log(req["express-validator#contexts"]);
+    // console.log(req.session);
+    console.log(req.session.id);
+    req.sessionStore.get(req.session.id, (err, sessionData) => {
+      if (err) {
+        console.log(err);
+        throw err;
+      }
+      console.log("Inside SessionStore Get");
+      console.log(sessionData);
+    });
+
+    console.log(req["express-validator#contexts"]);
     const result = validationResult(req);
     console.log(result);
+
     const {
       query: { filter, value },
     } = req;
 
-    if (!result.isEmpty()) {
-      return res.status(400).send({ errors: result.array() });
-    }
+    // if (!result.isEmpty()) {
+    //   return res.status(400).send({ errors: result.array() });
+    // }
 
+    console.log(`filter : ${filter}, value: ${value}`);
     if (filter && value) {
       return res.send(
         sampleUsers.filter((user) => user[filter].includes(value))

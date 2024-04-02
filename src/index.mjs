@@ -6,6 +6,7 @@ import { sampleUsers } from "./utils/constantData.mjs";
 import passport from "passport";
 import "./strategies/local-strategy.mjs";
 import mongoose from "mongoose";
+import MongoStore from "connect-mongo";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -29,6 +30,9 @@ app.use(
     saveUninitialized: false,
     resave: false,
     cookie: { maxAge: 60000 * 60 },
+    store: MongoStore.create({
+      client: mongoose.connection.getClient(),
+    }),
   })
 );
 
