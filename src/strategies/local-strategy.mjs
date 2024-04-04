@@ -5,9 +5,9 @@ import User from "../mongoose/schemas/user.mjs";
 import { comparePassword } from "../utils/helpers.mjs";
 
 passport.serializeUser((user, done) => {
-  done(null, user.id);
   console.log("Inside SerializeUser");
   console.log(user);
+  done(null, user.id);
 });
 
 passport.deserializeUser(async (id, done) => {
