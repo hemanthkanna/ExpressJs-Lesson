@@ -8,9 +8,19 @@ import passport from "passport";
 import mongoose from "mongoose";
 import MongoStore from "connect-mongo";
 import "./strategies/discord-strategy.mjs";
+import { config } from "dotenv";
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+
+// Resolve __dirname using import.meta.url
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Load environment variables from config.env
+config({ path: `${__dirname}/config/config.env` });
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 mongoose
   .connect("mongodb://localhost/express_lessons")
